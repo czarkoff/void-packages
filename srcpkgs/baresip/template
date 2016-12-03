@@ -1,0 +1,49 @@
+# Template file for 'baresip'
+pkgname=baresip
+version=0.4.20
+revision=1
+build_style=gnu-makefile
+hostmakedepends="pkg-config"
+makedepends="libgsm-devel libpng-devel libressl-devel libsndfile-devel
+ opus-devel re-devel rem-devel spandsp-devel speex-devel speexdsp-devel
+ tiff-devel twolame-devel $(vopt_if video 'SDL2-devel ffmpeg-devel libvpx-devel
+ libX11-devel v4l-utils-devel x265-devel') $(vopt_if gtk 'cairo-devel
+ gst-plugins-base1-devel gstreamer1-devel gtk+-devel mpg123-devel')"
+short_desc="Modular SIP User-Agent with audio and video support"
+maintainer="Dmitrij D. Czarkoff <czarkoff@gmail.com>"
+license="BSD"
+homepage="http://www.creytiv.com/baresip"
+distfiles="http://www.creytiv.com/pub/baresip-${version}.tar.gz"
+checksum="8bcf874a0207711489998f823e77aeae59b1a579c75b923c3b4525d6dc720a55"
+
+# Enable/disable modules
+_extra_mods="echo $(vopt_if video snapshot)"
+make_build_args="USE_ALSA= USE_GST= USE_GST_VIDEO= USE_OSS= USE_SDL= USE_ZRTP=
+ $(vopt_if video '' 'USE_AVCODEC= USE_AVFORMAT= USE_CAIRO= USE_SDL2= USE_V4L=
+ USE_V4L2= USE_VIDEO= USE_VPX= USE_X11=') $(vopt_if gtk '' 'USE_CAIRO=
+ USE_GST1= USE_GST_VIDEO1= USE_GTK=')"
+
+# Package build options
+build_options="gtk video"
+build_options_default="video"
+desc_option_gtk="Enable support for GTK+2 frontend and related modules"
+desc_option_video="Enable support for video calling"
+
+do_build() {
+	: ${make_cmd:=make}
+
+	CC="$CC" CXX="$CXX" LD="$LD" AR="$AR" RANLIB="$RANLIB" \
+		CPP="$CPP" AS="$AS" OBJDUMP="$OBJDUMP" CFLAGS="$CFLAGS" \
+		LFLAGS="$LDFLAGS" EXTRA_MODULES="${_extra_mods}" \
+		${make_cmd} PREFIX=/usr APP_LFLAGS="-fPIE -pie" \
+		${makejobs} ${make_build_args} ${make_build_target}
+}
+
+do_install() {
+	: ${make_cmd:=make}
+	: ${make_install_target:=install}
+	 EXTRA_MODULES="${_extra_mods}" \
+		${make_cmd} STRIP=true PREFIX=/usr DESTDIR=${DESTDIR} \
+		${make_build_args} ${make_install_target}
+	vlicense docs/COPYING
+}
