@@ -1,0 +1,43 @@
+# Template file for 'rem'
+pkgname="rem"
+version="0.5.0"
+revision=1
+build_style=gnu-makefile
+makedepends="re-devel"
+short_desc="Library for real-time audio and video processing"
+maintainer="Dmitrij D. Czarkoff <czarkoff@gmail.com>"
+license="BSD"
+homepage="http://www.creytiv.com/"
+distfiles="http://www.creytiv.com/pub/rem-${version}.tar.gz"
+checksum="6b516579e90736c5153dfa3fab843e27497b8596a4a96697e11d70c682972ad8"
+
+shlib_provides="librem.so"
+
+do_build() {
+	: ${make_cmd:=make}
+
+	CC="$CC" CXX="$CXX" LD="$LD" AR="$AR" RANLIB="$RANLIB" \
+	CPP="$CPP" AS="$AS" OBJDUMP="$OBJDUMP" CFLAGS="$CFLAGS" \
+	LFLAGS="$LDFLAGS" \
+	${make_cmd} \
+	${makejobs} PREFIX=/usr ${make_build_args} ${make_build_target}
+}
+
+do_install() {
+	: ${make_cmd:=make}
+	: ${make_install_target:=install}
+
+	${make_cmd} STRIP=true PREFIX=/usr DESTDIR=${DESTDIR} \
+		${make_install_args} ${make_install_target}
+	vlicense docs/COPYING
+}
+
+rem-devel_package() {
+	short_desc+=" - development files"
+	depends="${sourcepkg}>=${version}_${revision}"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/lib/*.a
+		vmove usr/lib/pkgconfig
+	}
+}
